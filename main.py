@@ -13,6 +13,9 @@ app = Flask(__name__)
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 
+# إضافة متغير للتحكم في المستخدم المسموح
+ALLOWED_USER_ID = 7083729747  # استبدل هذا بالقيمة التي تريدها
+
 @app.route('/')
 def home():
     return "☆ Bot is Running Successfully ☆"
@@ -20,10 +23,17 @@ def home():
 def run_bot():
     bot.infinity_polling()
 
+def is_allowed_user(user_id):
+    return user_id == ALLOWED_USER_ID
+
 @bot.message_handler(commands=['start'])
 def start_command_handler(message):
+    if not is_allowed_user(message.from_user.id):
+        bot.reply_to(message, "❌ غير مصرح لك باستخدام هذا البوت.")
+        return
+
     start_message = """
-_☆تم تشغيل البوت بنجاح☆_
+☆تم تشغيل البوت بنجاح☆
 
 تـم التـطــويـر بـواسـطــة :
 ✯ ᎷᎡｷᎫᎯᏦᎬᏞ ✯
@@ -38,14 +48,15 @@ _☆تم تشغيل البوت بنجاح☆_
 مباشـل الـى بوت التحكـم
 بعـد تشغيـل الأزرار...
 """
-    bot.send_message(
-        message.chat.id, 
-        start_message, 
-        parse_mode='Markdown'
-    )
+    # أرسل الرسالة بدون تنسيق Markdown لتجنب الأخطاء
+    bot.send_message(message.chat.id, start_message)
 
 @bot.message_handler(content_types=['audio'])
 def audio_handler(message):
+    if not is_allowed_user(message.from_user.id):
+        bot.reply_to(message, "❌ غير مصرح لك باستخدام هذا البوت.")
+        return
+
     try:
         file_info = bot.get_file(message.audio.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
