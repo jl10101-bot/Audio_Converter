@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import time
 import telebot
 from flask import Flask
 from threading import Thread
+import os
 
-TOKEN = '8049296329:AAE0hX6QHE_BkBuTINrFrYNjfbzhrfc0H1U'
+TOKEN = os.environ.get('TELEGRAM_TOKEN', '8049296329:AAE0hX6QHE_BkBuTINrFrYNjfbzhrfc0H1U')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# تشغيل سيرفلت للحفاظ على البوت نشطًا
+# لتجنب مشكلة الإصدارات
+import werkzeug
+werkzeug.cached_property = werkzeug.utils.cached_property
+
 @app.route('/')
 def home():
-    return "Bot is running!"
+    return "☆ Bot is Running Successfully ☆"
 
 def run_bot():
     bot.infinity_polling()
@@ -57,7 +60,5 @@ def audio_handler(message):
         bot.reply_to(message, "❌ حدث خطأ أثناء معالجة الصوت، يرجى المحاولة مرة أخرى")
 
 if __name__ == "__main__":
-    # بدء تشغيل البوت في ثانٍ منفصل
     Thread(target=run_bot).start()
-    # بدء تشغيل سيرفر فلاسك
     app.run(host='0.0.0.0', port=8080)
